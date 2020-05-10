@@ -2,6 +2,7 @@ package com.eloy.springboot.web;
 
 import com.eloy.springboot.domain.posts.Posts;
 import com.eloy.springboot.domain.posts.PostsRepository;
+import com.eloy.springboot.web.dto.PostsResponseDto;
 import com.eloy.springboot.web.dto.PostsSaveRequestDto;
 import org.junit.After;
 import org.junit.Test;
@@ -54,6 +55,32 @@ public class PostsApiControllerTest {
         // then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(responseEntity.getBody()).isGreaterThan(0L);
+
+        List<Posts> all = postsRepository.findAll();
+        assertThat(all.get(0).getTitle()).isEqualTo(title);
+        assertThat(all.get(0).getContent()).isEqualTo(content);
+    }
+
+    @Test
+    public void getPost() throws Exception {
+        // given
+        String title = "title";
+        String content = "content";
+        Posts savedPosts = postsRepository.save(
+                Posts.builder()
+                        .title(title)
+                        .content(content)
+                        .author("author")
+                        .build()
+        );
+        Long postId = savedPosts.getId();
+        String url = "http://localhost:" + port + "/api/v1/posts/" + postId;
+
+        // when
+        ResponseEntity<PostsResponseDto> responseEntity = restTemplate.getForEntity(url, PostsResponseDto.class);
+
+        // then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         List<Posts> all = postsRepository.findAll();
         assertThat(all.get(0).getTitle()).isEqualTo(title);
